@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-sacle=1, maximum-scale=1" >
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+    <div id="app">
+        <div class="head">
+            <a href="index.html"><i class="el-icon-arrow-left" style="font-size:28px;margin-left: 20px;"></i></a>
+            <span style="font-size: 20px;font-weight: 400;">浙江健康码</span>
+            <span style="font-size: 28px;margin-top: -12px; margin-right: 14px;">...</span>
+        </div>
+        <div class="content" id="content">
+            <div class="box-head"></div>
+            <el-card class="box-card">
+                <p style="text-align: center;font-size: 38px;font-weight: bold;margin:-5px 10px;">{{ nowDate }}</p>
+                <p style="text-align: center;font-weight:bold;font-size: 56px;font-weight: bold;margin:0">{{ nowTime }}</p>
+                <el-divider class="card-divider"></el-divider>
+                <p style="margin-top: 5px;margin-bottom: 0; position: relative;">
+                    <span style="font-weight: bold;font-size: 18px;" v-if="name.length === 2">{{ firstName }}{{ text }}</span>
+                    <span style="font-weight: bold;font-size: 18px;" v-else>{{ firstName }}{{ text }}{{ lastName }}</span>
+                    <el-button v-if="text === '*'" type="text" @click="onShow()">显示</el-button>
+                    <el-button v-else type="text" @click="text = '*'">隐藏</el-button>
+                    <img src="assets/WechatIMG363.jpeg" style="width: 58px; position: absolute; right: 0px; top: 5px;">
+                </p>
+                <div class="code" style="text-align: center;">
+                    <p class="title">{{ address }}</p>
+                    <img src="assets/WechatIMG364.jpeg" style="width: 72%;margin-top: -10px;">
+                    <p class="title1">杭州健康码</p>
+                    <p class="title2">已接种新冠疫苗</p>
+                </div>
+            </el-card>
+        </div>
+        <div class="left-time">
+            <img src="assets/WechatIMG368.jpeg" style="width: calc(100% - 20px);margin: 0 3px;">
+            <div class="dqsj">
+                <p class="dqsj-title">距离核酸{{ num }}天到期还剩：
+                    <img src="assets/time.png" width="20px" style="position: absolute; top: 10px;"/>
+                    <span style="color: rgb(61, 153, 245); font-size: 20px;font-weight: bold;margin-left: 25px;">{{ diffTime }}</span>
+                </p>
+            </div>
+        </div>
+        <img src="assets/WechatIMG380.png" style="width: calc(100% - 20px);margin: 0 3px;">
+        <div style="text-align: center;">
+            <img src="assets/WechatIMG378.png" style="width: calc(100% - 20px);height: 50px;margin-left: -10px;">
+            <p class="code-footer">依托全国一体化政务平台</p>
+            <p class="code-footer">开展跨省（区，市）数据共享和互通互认</p>
+            <p style="margin-top: 10px; color: #ccc;font-size: 13px;">服务热线：0571-12345-6</p>
+            <p style="color: #ccc;font-size: 13px;">- 本服务由杭州市人民政府提供 -</p>
+            <p style="color: #ccc;font-size: 12px;">Copyright@杭州市人民政府版权所有</p>
+        </div>
+    </div>
+</body>
+<script src="https://unpkg.com/vue@2.6.11/dist/vue.js"></script>
+<script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+<script src="script/moment.min.js" ></script>
+<script>
+  new Vue({
+    el: '#app',
+    data: function() {
+      return {
+        nowDate: '',
+        nowTime: '',
+        timer: null,
+        text: '*',
+        name: '',
+        datetime: '',
+        address: '',
+        firstName: '',
+        lastName: '',
+        midName: '',
+        diffTime: '',
+        num: 3
+      }
+    },
+    created() {
+      if(window.location.href.indexOf('?')>-1) {
+        const href = window.location.href.split("?")[1]
+        let urlParams = new URLSearchParams(href)
+        this.name = decodeURI(urlParams.get('name'))
+        this.address = decodeURI(urlParams.get('address'))
+        this.num = urlParams.get('num')
+        let datetime = urlParams.get('datetime')
+        if(!datetime) {
+          let newData = moment().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')
+          this.diffTime = this.filterTaskTime(newData, this.num) // 有效时间
+        }else{
+          this.diffTime = this.filterTaskTime(datetime, this.num) // 有效时间
+        }
+        if(this.name.length === 2) {
+          this.firstName = this.name?.split('')[0]
+          this.lastName = this.name?.split('').at(-1)
+        }else{
+          this.firstName = this.name?.split('')[0]
+          this.midName = this.name?.split('').at(-2)
+          this.lastName = this.name?.split('').at(-1)
+        }
+      }
+      this.init()
+    },
+    methods: {
+      init() {
+        const MDate = moment().format("MM")
+        if (Number(MDate) < 10) {
+          this.nowDate = moment().subtract(2, 'day').format("M月DD日")
+        } else {
+          this.nowDate = moment().subtract(2, 'day').format("MM月DD日")
+        }
+        this.nowTime = moment().locale('zh-cn').format('HH:mm:ss')
+        this.timer = setInterval(()=>{
+          this.nowTime = moment().locale('zh-cn').format('HH:mm:ss')
+        },1000)
+      },
+      onShow() {
+        if(this.name.length === 2) {
+          this. text = this.lastName
+        }else{
+          this. text = this.midName
+        }
+      },
+      /**
+       * @params 当前核酸时间
+       * @num 当前政府规定核酸天数， 比如每三天一次就填3
+       */
+      filterTaskTime(params, num){
+        let x= moment()
+        let y= moment(params).add(num,"days")  // 有效期
+        let duration = moment.duration(y.diff(x,'ms'))   // 做差
+        let days = duration.get('days')
+        let hours = duration.get('hours')
+        return days + '天' + hours + '小时'
+      }
+    },
+    beforeDestroy() {
+      clearInterval(this.timer)
+    }
+  })
+</script>
+<style>
+    #app {
+        height: 100%;
+        overflow-y: auto;
+        position: absolute;
+        width: 100%;
+        overflow-x: hidden;
+    }
+    .head{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        position: fixed;
+        height: 35px;
+        width: 100%;
+        z-index: 1001;
+        background: #fff;
+        top: 0;
+        left: 0;
+        padding-top: 5px;
+    }
+    .content{
+        height: 476px;
+        position: relative;
+        margin-top:40px;
+    }
+    .box-head{
+        background: #54a96f;
+        position: absolute;
+        height: 250px;
+        width: 100%;
+    }
+    .content .box-card{
+        position: absolute;
+        width: calc(100% - 45px);
+        margin: 20px;
+        border-radius: 10px;
+        margin-top: 18px;
+        margin-left: 17px;
+    }
+    .first-card{
+        margin-top: 0!important;
+        margin: 10px 25px 5px 10px;
+        border-radius: 10px;
+    }
+    .box-card .el-card__body{
+        padding-top: 5px;
+        padding-bottom: 10px;
+    }
+    .card-divider{
+        margin-bottom: 0;
+        margin-top: 0;
+    }
+    .card-tips{
+        background: #f4f7ff;
+        display: flex;
+        align-items: center;
+        padding: 5px;
+        position: relative;
+        margin: 0;
+    }
+    .first-card .el-card__body{
+        padding: 10px;
+    }
+    .code {
+        margin-top: -10px;
+    }
+    .code .title{
+        color:#000;
+        font-weight: 500;
+        margin-top: 0;
+    }
+    .code .title2{
+        color:#54a96f;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+    .code .title1{
+        color:#000;
+        font-weight: 500;
+        margin-bottom: 5px;
+        margin-top: 0;
+    }
+    .dqsj{
+        padding: 5px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        padding-right: 24px;
+        width: calc(100% - 78px);
+        padding-left: 20px;
+        margin-left: 10px;
+    }
+    .dqsj-title{
+        margin: 0;
+    }
+    .code-footer{
+        font-size: 13px;
+        color: #333;
+        margin-top:0;
+    }
+</style>
+</html>
