@@ -14,10 +14,13 @@
             <span style="font-size: 28px;margin-top: -12px; margin-right: 14px;">...</span>
         </div>
         <div class="content" id="content">
-            <div class="box-head"></div>
+            <div class="box-head">
+                <p style="text-align: center;font-weight:bold;font-size: 44px;font-weight: bold;margin:0; color: #fff;margin-top: 5px;">{{ nowTime }}</p>
+                <p style="text-align: center;font-size: 18px;margin:-5px 10px;color: #fff;">
+                    {{ nowDate }}&nbsp;&nbsp;{{weekStr}}
+                </p>
+            </div>
             <el-card class="box-card">
-                <p style="text-align: center;font-size: 38px;font-weight: bold;margin:-5px 10px;">{{ nowDate }}</p>
-                <p style="text-align: center;font-weight:bold;font-size: 56px;font-weight: bold;margin:0">{{ nowTime }}</p>
                 <el-divider class="card-divider"></el-divider>
                 <p style="margin-top: 5px;margin-bottom: 0; position: relative;">
                     <span style="font-weight: bold;font-size: 18px;" v-if="name.length === 2">{{ firstName }}{{ text }}</span>
@@ -35,11 +38,12 @@
             </el-card>
         </div>
         <div class="left-time">
-            <img src="assets/WechatIMG368.jpeg" style="width: calc(100% - 20px);margin: 0 3px;">
+            <img v-if="num>1" src="assets/WechatIMG368.jpeg" style="width: calc(100% - 20px);margin: 0 3px;">
+            <img v-else src="assets/WechatIMG389.png" style="width: calc(100% - 20px);margin: 0 3px;">
             <div class="dqsj">
                 <p class="dqsj-title">距离核酸{{ num }}天到期还剩：
                     <img src="assets/time.png" width="20px" style="position: absolute; top: 10px;"/>
-                    <span style="color: rgb(61, 153, 245); font-size: 20px;font-weight: bold;margin-left: 25px;">{{ diffTime }}</span>
+                    <span style="color: rgb(61, 153, 245); font-size: 20px;font-weight: bold;margin-left: 25px;">{{ !diffTime ? '1天19小时' : diffTime }}</span>
                 </p>
             </div>
         </div>
@@ -73,16 +77,23 @@
         lastName: '',
         midName: '',
         diffTime: '',
-        num: 3
+        num: 3,
+        weekStr: ''
       }
     },
     created() {
       if(window.location.href.indexOf('?')>-1) {
         const href = window.location.href.split("?")[1]
         let urlParams = new URLSearchParams(href)
-        this.name = decodeURI(urlParams.get('name'))
-        this.address = decodeURI(urlParams.get('address'))
-        this.num = urlParams.get('num')
+        if(decodeURI(urlParams.get('name'))) {
+          this.name = decodeURI(urlParams.get('name'))
+        }
+        if(decodeURI(urlParams.get('address'))) {
+          this.address = decodeURI(urlParams.get('address'))
+        }
+        if(urlParams.get('num')) {
+          this.num = urlParams.get('num')
+        }
         let datetime = urlParams.get('datetime')
         if(!datetime) {
           let newData = moment().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')
@@ -100,6 +111,7 @@
         }
       }
       this.init()
+      this.getWeek()
     },
     methods: {
       init() {
@@ -123,7 +135,7 @@
       },
       /**
        * @params 当前核酸时间
-       * @num 当前政府规定核酸天数， 比如每三天一次就填3
+       * @num 核酸频次
        */
       filterTaskTime(params, num){
         let x= moment()
@@ -132,6 +144,26 @@
         let days = duration.get('days')
         let hours = duration.get('hours')
         return days + '天' + hours + '小时'
+      },
+      getWeek() {
+        let str = ""
+        let week = new Date().getDay()
+        if (week == 0) {
+          str = "星期日"
+        } else if (week == 1) {
+          str = "星期一"
+        } else if (week == 2) {
+          str = "星期二"
+        } else if (week == 3) {
+          str = "星期三"
+        } else if (week == 4) {
+          str = "星期四"
+        } else if (week == 5) {
+          str = "星期五"
+        } else if (week == 6) {
+          str = "星期六"
+        }
+        this.weekStr = str
       }
     },
     beforeDestroy() {
@@ -167,7 +199,7 @@
         margin-top:40px;
     }
     .box-head{
-        background: #54a96f;
+        background-image: linear-gradient(to right, #49c8f2 30%, #74d941 100%);
         position: absolute;
         height: 250px;
         width: 100%;
@@ -177,7 +209,7 @@
         width: calc(100% - 45px);
         margin: 20px;
         border-radius: 10px;
-        margin-top: 18px;
+        margin-top: 95px;
         margin-left: 17px;
     }
     .first-card{
