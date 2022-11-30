@@ -22,7 +22,7 @@
                 <el-date-picker
                         v-model="form.datetime"
                         type="datetime"
-                        placeholder="选择日期时间"
+                        placeholder="可以不填"
                         clearable
                         format="yyyy-MM-dd HH:mm:ss"
                         style="width: 100%;">
@@ -67,7 +67,7 @@
         this.form.address = '万达广场写字楼'
         this.form.expireNum = 3
         this.form.username = '胡广'
-        this.form.datetime = moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss');
+        this.form.datetime = ''
       }
     }
   })
